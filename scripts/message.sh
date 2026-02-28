@@ -3,6 +3,11 @@
  * Kim 消息号发送脚本
  * 用法: message.sh -u <用户名> -m <消息内容>
  * 环境变量: KIM_APP_KEY, KIM_SECRET_KEY
+ * 
+ * 支持两种接口:
+ * - 单用户: /openapi/v2/message/send (username)
+ * - 批量用户: /openapi/v2/message/batch/send (usernames 数组)
+ * 自动尝试两个接口，哪个成功用哪个
  */
 
 const https = require('https');
@@ -86,7 +91,26 @@ async function getAccessToken() {
   return data.result.accessToken;
 }
 
-async function sendMessage(token, targetUser, msg) {
+/**
+ * 单用户发送 - /openapi/v2/message/send
+ */
+async function sendSingleUser(token, targetUser, msg) {
+  const url = `${BASE_URL}/openapi/v2/message/send`;
+  const payload = JSON.stringify({
+    msgType: 'markdown',
+    markdown: { content: msg },
+    username: targetUser,
+  });
+  const raw = await httpsPost(url, payload, {
+    Authorization: `Bearer ${token}`,
+  });
+  return JSON.parse(raw);
+}
+
+/**
+ * 批量用户发送 - /openapi/v2/message/batch/send
+ */
+async function sendBatchUsers(token, targetUser, msg) {
   const url = `${BASE_URL}/openapi/v2/message/batch/send`;
   const payload = JSON.stringify({
     msgType: 'markdown',
@@ -105,15 +129,29 @@ async function main() {
   const token = await getAccessToken();
   console.log(`🔑 获取到 accessToken`);
   
-  const result = await sendMessage(token, username, message);
+  // 尝试单用户接口
+  console.log(`📝 尝试单用户接口...`);
+  let result = await sendSingleUser(token, username, message);
   
   if (result.code === 0) {
-    console.log('✅ 消息发送成功！');
+    console.log('✅ 单用户接口发送成功！');
     console.log(JSON.stringify(result, null, 2));
-  } else {
-    console.error('❌ 发送失败:', result);
-    process.exit(1);
+    return;
   }
+  
+  console.log(`⚠️ 单用户接口失败，尝试批量用户接口...`, result);
+  
+  // 单用户失败，尝试批量用户接口
+  result = await sendBatchUsers(token, username, message);
+  
+  if (result.code === 0) {
+    console.log('✅ 批量用户接口发送成功！');
+    console.log(JSON.stringify(result, null, 2));
+    return;
+  }
+  
+  console.error('❌ 两个接口都失败了:', result);
+  process.exit(1);
 }
 
 main().catch((err) => {

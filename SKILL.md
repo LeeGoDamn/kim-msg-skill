@@ -64,7 +64,10 @@ kim-msg/message.sh -u wangyang -m "**提醒**：今天有会议"
 
 ### 消息号
 - **获取 Token:** `https://is-gateway.corp.kuaishou.com/token/get?appKey=<appKey>&secretKey=<secretKey>`
-- **发送消息:** `https://is-gateway.corp.kuaishou.com/openapi/v2/message/batch/send`
+- **发送消息:** 自动尝试以下两个接口：
+  - 单用户: `/openapi/v2/message/send` (`username` 单个用户)
+  - 批量: `/openapi/v2/message/batch/send` (`usernames` 数组)
+  - **自动重试:** 优先尝试单用户接口，失败则尝试批量接口
 - **Headers:** `Authorization: Bearer <token>`
 - **Body:**
 ```json
