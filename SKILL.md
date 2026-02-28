@@ -88,3 +88,7 @@ kim-msg/message.sh -u wangyang -m "**提醒**：今天有会议"
 - 不硬编码任何 API Key/Token
 - 消息内容需合规
 - API 异常时检查凭证和网络
+
+## 源码
+
+GitHub: https://github.com/LeeGoDamn/kim-msg-skill
