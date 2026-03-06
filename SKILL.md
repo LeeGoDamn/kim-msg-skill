@@ -41,12 +41,20 @@ kim-msg/webhook.sh "Hello World" --text
 
 ### 方式二：消息号发送
 
+**推荐：使用包装脚本（自动加载密钥）**
 ```bash
 # 发送消息给指定用户（用户名必须是邮箱前缀，如 wangyang）
-kim-msg/message.sh -u <邮箱前缀> -m "消息内容"
+kim-msg/send.sh -u <邮箱前缀> -m "消息内容"
 
 # 示例
-kim-msg/message.sh -u wangyang -m "**提醒**：今天有会议"
+kim-msg/send.sh -u wangyang -m "**提醒**：今天有会议"
+```
+
+**或直接调用 Node 脚本（需自行设置环境变量）**
+```bash
+export KIM_APP_KEY=your_app_key
+export KIM_SECRET_KEY=your_secret_key
+kim-msg/message.js -u <邮箱前缀> -m "消息内容"
 ```
 
 > ⚠️ 首次使用如果遇到权限错误，运行：`chmod +x scripts/*.sh`
